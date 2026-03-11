@@ -1,0 +1,36 @@
+name: Google Trends Monitor (1d)
+
+on:
+  schedule:
+    # 每天 UTC 时间 13 点运行一次（等于北京时间 21 点）
+    - cron: '0 13 * * *'
+  workflow_dispatch:
+
+jobs:
+  run-trends-monitor-1d:
+    runs-on: ubuntu-latest
+
+    env:
+      # 如果你后续重新启用飞书推送，可以继续使用这个变量
+      TRENDS_FEISHU_WEBHOOK: ${{ secrets.FEISHU_WEBHOOK }}
+      # 覆盖 timeframe 为最近 1 天
+      TRENDS_TIMEFRAME: "now 1-d"
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run trends monitor (1-day window, test mode)
+        run: |
+          python trends_monitor.py --test
+
